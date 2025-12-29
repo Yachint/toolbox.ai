@@ -225,36 +225,64 @@
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
+            z-index: 1;
         }
 
+        /* Background fill effect */
         .day-card::before {
             content: "";
             position: absolute;
             bottom: 0;
             left: 0;
             right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #42a5f5, #1e88e5);
-            transform: scaleX(0);
-            transition: transform 0.3s ease;
-        }
-
-        .day-card:hover::before {
-            transform: scaleX(1);
+            height: var(--fill-percent, 0%);
+            background: var(--fill-color, rgba(66, 165, 245, 0.15));
+            transition: height 0.5s ease;
+            z-index: -1;
         }
 
         .day-card:hover {
             transform: translateY(-3px);
-            border-color: rgba(66, 165, 245, 0.3);
+            border-color: var(--border-color, rgba(66, 165, 245, 0.3));
+        }
+
+        /* Color coding based on percentage */
+        .day-card.level-safe {
+            --fill-color: rgba(76, 175, 80, 0.2);
+            --border-color: rgba(76, 175, 80, 0.4);
+        }
+        .day-card.level-safe .day-percentage {
+            color: #81c784;
+        }
+
+        .day-card.level-moderate {
+            --fill-color: rgba(66, 165, 245, 0.2);
+            --border-color: rgba(66, 165, 245, 0.4);
+        }
+        .day-card.level-moderate .day-percentage {
+            color: #64b5f6;
+        }
+
+        .day-card.level-warning {
+            --fill-color: rgba(255, 193, 7, 0.2);
+            --border-color: rgba(255, 193, 7, 0.4);
+        }
+        .day-card.level-warning .day-percentage {
+            color: #ffd54f;
+        }
+
+        .day-card.level-danger {
+            --fill-color: rgba(244, 67, 54, 0.2);
+            --border-color: rgba(244, 67, 54, 0.4);
+        }
+        .day-card.level-danger .day-percentage {
+            color: #e57373;
         }
 
         .day-card.today {
-            background: linear-gradient(135deg, rgba(66, 165, 245, 0.2), rgba(30, 136, 229, 0.15));
+            border-width: 2px;
             border-color: #42a5f5;
-        }
-
-        .day-card.today::before {
-            transform: scaleX(1);
+            box-shadow: 0 0 15px rgba(66, 165, 245, 0.3);
         }
 
         .day-card.past {
@@ -668,6 +696,20 @@
 
                 // For display, cap at 100% (which would include safety buffer usage)
                 const displayPercentage = Math.min(cumulativeAtEndOfDay, 100);
+
+                // Add color class based on percentage
+                let levelClass = 'level-safe';
+                if (displayPercentage >= 90) {
+                    levelClass = 'level-danger';
+                } else if (displayPercentage >= 70) {
+                    levelClass = 'level-warning';
+                } else if (displayPercentage >= 40) {
+                    levelClass = 'level-moderate';
+                }
+                card.classList.add(levelClass);
+
+                // Set fill percentage as CSS variable
+                card.style.setProperty('--fill-percent', `${displayPercentage}%`);
 
                 let label = 'cumulative';
                 if (isToday) {
