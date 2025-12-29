@@ -366,6 +366,14 @@
             color: #64b5f6;
         }
 
+        .last-updated {
+            text-align: center;
+            color: #666;
+            font-size: 0.8rem;
+            margin-top: 20px;
+            font-style: italic;
+        }
+
         @media (max-width: 600px) {
             body {
                 padding: 15px;
@@ -501,6 +509,7 @@
                 <div class="calendar-grid" id="calendarGrid">
                     <!-- Calendar cards will be inserted here -->
                 </div>
+                <p class="last-updated" id="lastUpdated">Last updated: --</p>
             </div>
         </div>
     </div>
@@ -597,6 +606,11 @@
 
             // Generate calendar
             generateCalendar(lastReset, nextReset, dailyLimit, hourlyRate);
+
+            // Update last updated timestamp
+            const updateTime = new Date();
+            document.getElementById('lastUpdated').textContent = 
+                `Last updated: ${updateTime.toLocaleTimeString()} (auto-updates every 30 min)`;
         }
 
         function formatTime(hour, minute) {
