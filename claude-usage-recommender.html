@@ -38,7 +38,57 @@
             position: absolute;
             opacity: 0.04;
             fill: #ffffff;
+            will-change: transform;
         }
+
+        /* Snowfall animations - different speeds for variety */
+        @keyframes snowfall1 {
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+            }
+            100% {
+                transform: translateY(calc(100vh + 100px)) rotate(360deg);
+            }
+        }
+
+        @keyframes snowfall2 {
+            0% {
+                transform: translateY(-100px) rotate(0deg) translateX(0px);
+            }
+            50% {
+                transform: translateY(50vh) rotate(180deg) translateX(20px);
+            }
+            100% {
+                transform: translateY(calc(100vh + 100px)) rotate(360deg) translateX(0px);
+            }
+        }
+
+        @keyframes snowfall3 {
+            0% {
+                transform: translateY(-100px) rotate(0deg) translateX(0px);
+            }
+            50% {
+                transform: translateY(50vh) rotate(-180deg) translateX(-15px);
+            }
+            100% {
+                transform: translateY(calc(100vh + 100px)) rotate(-360deg) translateX(0px);
+            }
+        }
+
+        .snowflake {
+            animation-timing-function: linear;
+            animation-iteration-count: infinite;
+        }
+
+        .snow-speed-1 { animation-duration: 25s; }
+        .snow-speed-2 { animation-duration: 30s; }
+        .snow-speed-3 { animation-duration: 35s; }
+        .snow-speed-4 { animation-duration: 40s; }
+        .snow-speed-5 { animation-duration: 45s; }
+
+        .snow-anim-1 { animation-name: snowfall1; }
+        .snow-anim-2 { animation-name: snowfall2; }
+        .snow-anim-3 { animation-name: snowfall3; }
 
         .container {
             max-width: 900px;
@@ -790,41 +840,36 @@
         // Generate falling Claude logo background
         function generateBackground() {
             const container = document.getElementById('bgPattern');
-            const logoSVG = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <g transform="translate(50,50)">
-                    ${Array.from({length: 14}, (_, i) => {
-                        const angle = (i * 360 / 14) - 90;
-                        const rad = angle * Math.PI / 180;
-                        return `<polygon points="0,-8 4,-45 0,-42 -4,-45" transform="rotate(${i * 360/14})" />`;
-                    }).join('')}
-                    <circle r="12" />
-                </g>
-            </svg>`;
             
-            // Create columns of falling logos
-            const columns = Math.ceil(window.innerWidth / 150);
-            const rows = Math.ceil(window.innerHeight / 120) + 2;
+            // Number of snowflakes based on screen width
+            const numFlakes = Math.floor(window.innerWidth / 60);
             
             let html = '';
-            for (let col = 0; col < columns; col++) {
-                const xBase = col * 150 + (col % 2 === 0 ? 0 : 75);
-                const startOffset = col % 2 === 0 ? 0 : -60;
+            for (let i = 0; i < numFlakes; i++) {
+                // Random horizontal position across full width
+                const x = Math.random() * 100;
                 
-                for (let row = 0; row < rows; row++) {
-                    const x = xBase + (Math.sin(col * 1.5 + row * 0.8) * 20);
-                    const y = startOffset + row * 120 + (col % 3) * 30;
-                    const size = 30 + (col + row) % 3 * 10;
-                    const opacity = 0.03 + ((col + row) % 4) * 0.01;
-                    const rotation = ((col * 7 + row * 13) % 30) - 15;
-                    
-                    html += `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" 
-                        style="left:${x}px; top:${y}px; width:${size}px; height:${size}px; opacity:${opacity}; transform:rotate(${rotation}deg);">
-                        <g transform="translate(50,50)">
-                            ${Array.from({length: 14}, (_, i) => `<polygon points="0,-8 4,-45 0,-42 -4,-45" transform="rotate(${i * 360/14})" />`).join('')}
-                            <circle r="12" />
-                        </g>
-                    </svg>`;
-                }
+                // Random size (smaller = further away, falls slower)
+                const sizeClass = (i % 5) + 1;
+                const size = 20 + Math.random() * 35;
+                
+                // Random opacity for depth
+                const opacity = 0.02 + Math.random() * 0.04;
+                
+                // Random animation type (1, 2, or 3 for different sway patterns)
+                const animType = (i % 3) + 1;
+                
+                // Random start delay so they don't all start at the same position
+                const delay = Math.random() * -45;
+                
+                html += `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" 
+                    class="snowflake snow-speed-${sizeClass} snow-anim-${animType}"
+                    style="left:${x}%; width:${size}px; height:${size}px; opacity:${opacity}; animation-delay:${delay}s;">
+                    <g transform="translate(50,50)">
+                        ${Array.from({length: 14}, (_, j) => `<polygon points="0,-8 4,-45 0,-42 -4,-45" transform="rotate(${j * 360/14})" />`).join('')}
+                        <circle r="12" />
+                    </g>
+                </svg>`;
             }
             container.innerHTML = html;
         }
