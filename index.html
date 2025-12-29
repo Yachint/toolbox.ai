@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>toolbox.ai — Mini Tools Collection</title>
+    <style>
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-card: #ffffff;
+            --text-primary: #1a1a2e;
+            --text-secondary: #4a4a68;
+            --text-muted: #8888a0;
+            --border-color: #e8e8f0;
+            --accent: #6366f1;
+            --accent-hover: #4f46e5;
+            --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            --shadow-hover: 0 8px 24px rgba(99, 102, 241, 0.15);
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #0f0f1a;
+            --bg-secondary: #1a1a2e;
+            --bg-card: #1e1e32;
+            --text-primary: #f0f0f5;
+            --text-secondary: #b8b8c8;
+            --text-muted: #6868a0;
+            --border-color: #2a2a45;
+            --accent: #818cf8;
+            --accent-hover: #a5b4fc;
+            --shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            --shadow-hover: 0 8px 24px rgba(129, 140, 248, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            transition: background 0.3s ease, color 0.3s ease;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed, #6d28d9);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.35);
+        }
+
+        .logo-icon::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                135deg,
+                rgba(255, 255, 255, 0.4) 0%,
+                rgba(255, 255, 255, 0.1) 50%,
+                transparent 50%
+            );
+            pointer-events: none;
+        }
+
+        .logo-icon svg {
+            width: 24px;
+            height: 24px;
+            fill: white;
+            filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15));
+            position: relative;
+            z-index: 1;
+        }
+
+        .logo h1 {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 50px;
+            padding: 0.35rem;
+        }
+
+        .theme-btn {
+            background: none;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            transition: all 0.2s ease;
+        }
+
+        .theme-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .theme-btn.active {
+            background: var(--bg-card);
+            color: var(--accent);
+            box-shadow: var(--shadow);
+        }
+
+        /* Hero */
+        .hero {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .hero h2 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--text-primary);
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        /* Tools Grid */
+        .tools-section h3 {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+
+        .tools-list {
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        /* Tool Item - Easy to copy/paste */
+        .tool-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.25rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.2s ease;
+        }
+
+        .tool-item:hover {
+            border-color: var(--accent);
+            box-shadow: var(--shadow-hover);
+            transform: translateY(-2px);
+        }
+
+        .tool-icon {
+            width: 44px;
+            height: 44px;
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .tool-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .tool-name {
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--text-primary);
+            margin-bottom: 0.15rem;
+        }
+
+        .tool-desc {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .tool-arrow {
+            color: var(--text-muted);
+            font-size: 1.25rem;
+            transition: transform 0.2s ease, color 0.2s ease;
+        }
+
+        .tool-item:hover .tool-arrow {
+            color: var(--accent);
+            transform: translateX(4px);
+        }
+
+        /* Footer */
+        footer {
+            margin-top: 4rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .container {
+                padding: 1.5rem 1rem;
+            }
+
+            header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .hero h2 {
+                font-size: 1.5rem;
+            }
+
+            .tool-desc {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Main large sparkle -->
+                        <path d="M12 1L13.5 7.5L20 9L13.5 10.5L12 17L10.5 10.5L4 9L10.5 7.5L12 1Z"/>
+                        <!-- Small sparkle top right -->
+                        <path d="M19 2L19.75 4.25L22 5L19.75 5.75L19 8L18.25 5.75L16 5L18.25 4.25L19 2Z"/>
+                        <!-- Small sparkle bottom -->
+                        <path d="M9 17L9.5 19L11.5 19.5L9.5 20L9 22L8.5 20L6.5 19.5L8.5 19L9 17Z"/>
+                    </svg>
+                </div>
+                <h1>toolbox.ai</h1>
+            </div>
+            <div class="theme-toggle">
+                <button class="theme-btn" data-theme="light" title="Light mode" aria-label="Light mode">☀️</button>
+                <button class="theme-btn" data-theme="dark" title="Dark mode" aria-label="Dark mode">🌙</button>
+                <button class="theme-btn" data-theme="auto" title="Auto (system)" aria-label="Auto detect theme">💻</button>
+            </div>
+        </header>
+
+        <section class="hero">
+            <h2>A Collection of Mini Tools</h2>
+            <p>Simple, fast, and privacy-friendly utilities that run entirely in your browser.</p>
+        </section>
+
+        <section class="tools-section">
+            <h3>Available Tools</h3>
+            <div class="tools-list">
+
+                <!-- ========================================== -->
+                <!-- TOOL ITEM TEMPLATE - Copy & paste to add   -->
+                <!-- Just change: href, emoji, name, and desc   -->
+                <!-- ========================================== -->
+
+                <a href="json-formatter.html" class="tool-item">
+                    <div class="tool-icon">🤖</div>
+                    <div class="tool-info">
+                        <div class="tool-name">Claude Usage Recommender</div>
+                        <div class="tool-desc">Recommends Claude Usage based on Weekly Reset and Daily usage</div>
+                    </div>
+                    <span class="tool-arrow">→</span>
+                </a>
+
+                <!-- END OF TOOL ITEMS -->
+
+            </div>
+        </section>
+
+        <footer>
+            <p>Built with ❤️ — <a href="https://github.com/yourusername/toolbox.ai" target="_blank">View on GitHub</a></p>
+        </footer>
+    </div>
+
+    <script>
+        (function() {
+            const STORAGE_KEY = 'toolbox-theme';
+            const themeButtons = document.querySelectorAll('.theme-btn');
+            
+            // Get saved preference or default to 'auto'
+            function getSavedTheme() {
+                return localStorage.getItem(STORAGE_KEY) || 'auto';
+            }
+
+            // Detect system preference
+            function getSystemTheme() {
+                return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
+
+            // Apply theme to document
+            function applyTheme(theme) {
+                const effectiveTheme = theme === 'auto' ? getSystemTheme() : theme;
+                document.documentElement.setAttribute('data-theme', effectiveTheme);
+                
+                // Update active button
+                themeButtons.forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.theme === theme);
+                });
+            }
+
+            // Initialize theme
+            function initTheme() {
+                const savedTheme = getSavedTheme();
+                applyTheme(savedTheme);
+            }
+
+            // Handle button clicks
+            themeButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const theme = btn.dataset.theme;
+                    localStorage.setItem(STORAGE_KEY, theme);
+                    applyTheme(theme);
+                });
+            });
+
+            // Listen for system theme changes (for auto mode)
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+                if (getSavedTheme() === 'auto') {
+                    applyTheme('auto');
+                }
+            });
+
+            // Initialize on load
+            initTheme();
+        })();
+    </script>
+</body>
+</html>
