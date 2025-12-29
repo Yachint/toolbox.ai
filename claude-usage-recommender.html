@@ -704,6 +704,18 @@
             setInterval(calculate, 1800000);
         });
 
+        // Recalculate when tab becomes visible (handles sleep/wake scenarios)
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'visible') {
+                calculate();
+            }
+        });
+
+        // Also handle window focus for additional coverage
+        window.addEventListener('focus', function() {
+            calculate();
+        });
+
         // Recalculate when inputs change
         document.getElementById('resetDay').addEventListener('change', calculate);
         document.getElementById('resetTime').addEventListener('change', calculate);
