@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Weekly Usage Planner</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #e8e8e8;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2rem;
+            background: linear-gradient(90deg, #64b5f6, #42a5f5);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 30px;
+            font-size: 0.95rem;
+        }
+
+        .input-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .input-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-size: 0.85rem;
+            color: #aaa;
+            font-weight: 500;
+        }
+
+        input, select {
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(0, 0, 0, 0.3);
+            color: #fff;
+            font-size: 1rem;
+            min-width: 160px;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #42a5f5;
+            box-shadow: 0 0 0 3px rgba(66, 165, 245, 0.2);
+        }
+
+        button {
+            padding: 12px 30px;
+            border-radius: 10px;
+            border: none;
+            background: linear-gradient(135deg, #42a5f5, #1e88e5);
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(66, 165, 245, 0.4);
+        }
+
+        .results-section {
+            display: none;
+        }
+
+        .results-section.visible {
+            display: block;
+        }
+
+        .recommendation-card {
+            background: linear-gradient(135deg, rgba(66, 165, 245, 0.15), rgba(30, 136, 229, 0.1));
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(66, 165, 245, 0.3);
+        }
+
+        .recommendation-card h2 {
+            font-size: 1.1rem;
+            color: #64b5f6;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .recommendation-card h2::before {
+            content: "💡";
+        }
+
+        .main-recommendation {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        .recommendation-detail {
+            color: #aaa;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .stats-row {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat-badge {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+        }
+
+        .stat-badge span {
+            color: #64b5f6;
+            font-weight: 600;
+        }
+
+        .calendar-section h2 {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .calendar-section h2::before {
+            content: "📅";
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 12px;
+        }
+
+        .day-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .day-card::before {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #42a5f5, #1e88e5);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .day-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .day-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(66, 165, 245, 0.3);
+        }
+
+        .day-card.today {
+            background: linear-gradient(135deg, rgba(66, 165, 245, 0.2), rgba(30, 136, 229, 0.15));
+            border-color: #42a5f5;
+        }
+
+        .day-card.today::before {
+            transform: scaleX(1);
+        }
+
+        .day-card.past {
+            opacity: 0.5;
+        }
+
+        .day-name {
+            font-size: 0.8rem;
+            color: #888;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .day-date {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #e0e0e0;
+        }
+
+        .day-percentage {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #64b5f6;
+            margin-bottom: 4px;
+        }
+
+        .day-label {
+            font-size: 0.75rem;
+            color: #666;
+        }
+
+        .day-card.today .day-label {
+            color: #42a5f5;
+            font-weight: 600;
+        }
+
+        .buffer-info {
+            background: rgba(76, 175, 80, 0.1);
+            border: 1px solid rgba(76, 175, 80, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .buffer-info::before {
+            content: "🛡️";
+            font-size: 1.5rem;
+        }
+
+        .buffer-info p {
+            color: #81c784;
+            font-size: 0.9rem;
+        }
+
+        .current-usage-section {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .current-usage-section label {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .usage-input-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .usage-input-row input {
+            width: 100px;
+        }
+
+        .remaining-today {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            border-radius: 8px;
+            padding: 10px 16px;
+            color: #ffd54f;
+            font-weight: 500;
+        }
+
+        .by-midnight-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 12px;
+            padding: 12px 16px;
+            background: rgba(100, 181, 246, 0.1);
+            border: 1px solid rgba(100, 181, 246, 0.3);
+            border-radius: 8px;
+        }
+
+        .midnight-label {
+            color: #90caf9;
+            font-size: 0.9rem;
+        }
+
+        .midnight-value {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #64b5f6;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .input-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .field {
+                width: 100%;
+            }
+
+            input, select, button {
+                width: 100%;
+            }
+
+            .calendar-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .main-recommendation {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Claude Weekly Usage Planner</h1>
+        <p class="subtitle">Plan your Claude usage to last the entire week</p>
+
+        <div class="input-section">
+            <div class="input-group">
+                <div class="field">
+                    <label for="resetDay">Weekly Reset Day</label>
+                    <select id="resetDay">
+                        <option value="0">Sunday</option>
+                        <option value="1">Monday</option>
+                        <option value="2">Tuesday</option>
+                        <option value="3">Wednesday</option>
+                        <option value="4" selected>Thursday</option>
+                        <option value="5">Friday</option>
+                        <option value="6">Saturday</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="resetTime">Reset Time</label>
+                    <input type="time" id="resetTime" value="15:30">
+                </div>
+                <div class="field">
+                    <label for="dailyLimit">Daily Limit (%)</label>
+                    <input type="number" id="dailyLimit" min="1" max="20" value="13.5" step="0.5" placeholder="e.g., 13.5">
+                </div>
+            </div>
+        </div>
+
+        <div class="results-section" id="results">
+            <div class="recommendation-card">
+                <h2>Today's Recommendation</h2>
+                <div class="main-recommendation" id="todayLimit">--</div>
+                <p class="recommendation-detail" id="recommendationText">
+                    Enter your reset time and current usage to get your personalized recommendation.
+                </p>
+                <div class="stats-row">
+                    <div class="stat-badge">Time until reset: <span id="timeUntilReset">--</span></div>
+                    <div class="stat-badge">Days remaining: <span id="daysRemaining">--</span></div>
+                    <div class="stat-badge">Safety buffer: <span id="availableBudget">--</span></div>
+                </div>
+
+                <div class="current-usage-section">
+                    <div class="usage-input-row">
+                        <span class="remaining-today" id="remainingToday">You can use up to --% more today</span>
+                    </div>
+                    <div class="by-midnight-info">
+                        <span class="midnight-label">By midnight tonight:</span>
+                        <span class="midnight-value" id="midnightValue">--%</span>
+                    </div>
+                </div>
+
+                <div class="buffer-info">
+                    <p id="bufferText">A safety buffer is reserved to ensure you have emergency capacity in the final hours before reset.</p>
+                </div>
+            </div>
+
+            <div class="calendar-section">
+                <h2>Weekly Usage Plan</h2>
+                <div class="calendar-grid" id="calendarGrid">
+                    <!-- Calendar cards will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const FULL_DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+        function calculate() {
+            const resetDay = parseInt(document.getElementById('resetDay').value);
+            const resetTime = document.getElementById('resetTime').value;
+            const dailyLimit = parseFloat(document.getElementById('dailyLimit').value) || 13.5;
+
+            const now = new Date();
+            const [resetHour, resetMinute] = resetTime.split(':').map(Number);
+
+            // Calculate LAST reset date (when the current week started)
+            let lastReset = new Date(now);
+            lastReset.setHours(resetHour, resetMinute, 0, 0);
+
+            // Find the most recent occurrence of reset day
+            let daysSinceReset = (now.getDay() - resetDay + 7) % 7;
+            
+            // If it's the same day, check if reset time has passed
+            if (daysSinceReset === 0) {
+                const resetTimeToday = new Date(now);
+                resetTimeToday.setHours(resetHour, resetMinute, 0, 0);
+                if (now < resetTimeToday) {
+                    // Reset hasn't happened yet today, so last reset was 7 days ago
+                    daysSinceReset = 7;
+                }
+            }
+
+            lastReset.setDate(now.getDate() - daysSinceReset);
+
+            // Calculate next reset
+            let nextReset = new Date(lastReset);
+            nextReset.setDate(lastReset.getDate() + 7);
+
+            // Calculate hours since last reset
+            const msElapsed = now - lastReset;
+            const hoursElapsed = msElapsed / (1000 * 60 * 60);
+
+            // Calculate hourly rate based on daily limit
+            const hourlyRate = dailyLimit / 24;
+
+            // Calculate cumulative limit for right now
+            const cumulativeLimit = Math.floor(hoursElapsed * hourlyRate);
+
+            // Calculate cumulative limit by midnight tonight
+            let midnight = new Date(now);
+            midnight.setDate(midnight.getDate() + 1);
+            midnight.setHours(0, 0, 0, 0);
+            
+            // Cap midnight at next reset if reset comes before midnight
+            if (midnight > nextReset) {
+                midnight = nextReset;
+            }
+            
+            const hoursToMidnight = (midnight - lastReset) / (1000 * 60 * 60);
+            const midnightLimit = Math.floor(hoursToMidnight * hourlyRate);
+
+            // Calculate time remaining until next reset
+            const msRemaining = nextReset - now;
+            const hoursRemaining = msRemaining / (1000 * 60 * 60);
+            const daysRemaining = hoursRemaining / 24;
+
+            // Calculate safety buffer
+            const fullCapacityPerDay = 100 / 7;
+            const dailySavings = fullCapacityPerDay - dailyLimit;
+            const totalSafetyBuffer = dailySavings * 7;
+
+            // Update UI
+            document.getElementById('results').classList.add('visible');
+            document.getElementById('todayLimit').textContent = `Up to ${cumulativeLimit}% now`;
+            
+            const hoursLeft = Math.floor(hoursRemaining);
+            const minutesLeft = Math.floor((hoursRemaining - hoursLeft) * 60);
+            document.getElementById('timeUntilReset').textContent = `${hoursLeft}h ${minutesLeft}m`;
+            document.getElementById('daysRemaining').textContent = daysRemaining.toFixed(1);
+            document.getElementById('availableBudget').textContent = `${totalSafetyBuffer.toFixed(1)}%`;
+
+            document.getElementById('remainingToday').textContent = 
+                `Hourly rate: ~${hourlyRate.toFixed(2)}% per hour (${dailyLimit}% per day)`;
+
+            document.getElementById('midnightValue').textContent = `${midnightLimit}%`;
+
+            document.getElementById('recommendationText').textContent = 
+                `${hoursElapsed.toFixed(1)} hours have passed since the last reset (${FULL_DAYS[resetDay]} ${formatTime(resetHour, resetMinute)}). ` +
+                `At ${dailyLimit}% per day, you can use up to ${cumulativeLimit}% right now.`;
+
+            document.getElementById('bufferText').textContent = 
+                `By using ${dailyLimit}% daily instead of ${fullCapacityPerDay.toFixed(1)}%, you'll have ${totalSafetyBuffer.toFixed(1)}% safety buffer by the end of the week.`;
+
+            // Generate calendar
+            generateCalendar(lastReset, nextReset, dailyLimit, hourlyRate);
+        }
+
+        function formatTime(hour, minute) {
+            const ampm = hour >= 12 ? 'PM' : 'AM';
+            const h = hour % 12 || 12;
+            const m = minute.toString().padStart(2, '0');
+            return `${h}:${m} ${ampm}`;
+        }
+
+        function generateCalendar(lastReset, nextReset, dailyLimit, hourlyRate) {
+            const calendarGrid = document.getElementById('calendarGrid');
+            calendarGrid.innerHTML = '';
+
+            const now = new Date();
+            
+            // Start from the day of last reset
+            let currentDate = new Date(lastReset);
+            currentDate.setHours(0, 0, 0, 0);
+
+            // If reset was in the afternoon, the first calendar day is the reset day itself
+            // We want to show from reset day to the day before next reset
+            
+            let dayIndex = 0;
+
+            while (dayIndex < 8) {
+                const card = document.createElement('div');
+                card.className = 'day-card';
+
+                const isToday = currentDate.toDateString() === now.toDateString();
+                const isPast = currentDate < new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                
+                if (isToday) {
+                    card.classList.add('today');
+                } else if (isPast) {
+                    card.classList.add('past');
+                }
+
+                const dayName = DAYS[currentDate.getDay()];
+                const dayDate = currentDate.getDate();
+                const month = currentDate.toLocaleString('default', { month: 'short' });
+
+                // Calculate cumulative limit at end of this day (midnight)
+                let endOfDay = new Date(currentDate);
+                endOfDay.setDate(endOfDay.getDate() + 1); // Next day midnight
+                endOfDay.setHours(0, 0, 0, 0);
+
+                // But cap it at next reset time
+                if (endOfDay > nextReset) {
+                    endOfDay = nextReset;
+                }
+
+                // Hours from last reset to end of this day
+                const hoursFromReset = (endOfDay - lastReset) / (1000 * 60 * 60);
+                const cumulativeAtEndOfDay = Math.floor(hoursFromReset * hourlyRate);
+
+                // For display, cap at 100% (which would include safety buffer usage)
+                const displayPercentage = Math.min(cumulativeAtEndOfDay, 100);
+
+                let label = 'cumulative';
+                if (isToday) {
+                    label = 'by midnight';
+                }
+
+                // Check if this is the reset day
+                if (currentDate.getDay() === lastReset.getDay() && 
+                    currentDate.toDateString() === lastReset.toDateString()) {
+                    label = 'reset day';
+                }
+
+                card.innerHTML = `
+                    <div class="day-name">${dayName}</div>
+                    <div class="day-date">${month} ${dayDate}</div>
+                    <div class="day-percentage">${displayPercentage}%</div>
+                    <div class="day-label">${label}</div>
+                `;
+
+                calendarGrid.appendChild(card);
+
+                currentDate.setDate(currentDate.getDate() + 1);
+                dayIndex++;
+
+                // Stop if we've passed the next reset
+                if (currentDate > nextReset) break;
+            }
+        }
+
+        // Auto-calculate on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            calculate();
+            // Update every 30 minutes (1800000 ms)
+            setInterval(calculate, 1800000);
+        });
+
+        // Recalculate when inputs change
+        document.getElementById('resetDay').addEventListener('change', calculate);
+        document.getElementById('resetTime').addEventListener('change', calculate);
+        document.getElementById('dailyLimit').addEventListener('input', calculate);
+    </script>
+</body>
+</html>
