@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Claude Weekly Usage Planner</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
     <style>
         * {
             margin: 0;
@@ -17,6 +18,26 @@
             min-height: 100vh;
             color: #e8e8e8;
             padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Claude logo rain background */
+        .bg-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: -1;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .bg-pattern svg {
+            position: absolute;
+            opacity: 0.04;
+            fill: #ffffff;
         }
 
         .container {
@@ -475,6 +496,9 @@
     </style>
 </head>
 <body>
+    <!-- Claude logo rain background -->
+    <div class="bg-pattern" id="bgPattern"></div>
+    
     <div class="container">
         <h1>Claude Weekly Usage Planner</h1>
         <p class="subtitle">Plan your Claude usage to last the entire week</p>
@@ -762,6 +786,58 @@
         document.getElementById('resetDay').addEventListener('change', calculate);
         document.getElementById('resetTime').addEventListener('change', calculate);
         document.getElementById('dailyLimit').addEventListener('input', calculate);
+
+        // Generate falling Claude logo background
+        function generateBackground() {
+            const container = document.getElementById('bgPattern');
+            const logoSVG = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <g transform="translate(50,50)">
+                    ${Array.from({length: 14}, (_, i) => {
+                        const angle = (i * 360 / 14) - 90;
+                        const rad = angle * Math.PI / 180;
+                        return `<polygon points="0,-8 4,-45 0,-42 -4,-45" transform="rotate(${i * 360/14})" />`;
+                    }).join('')}
+                    <circle r="12" />
+                </g>
+            </svg>`;
+            
+            // Create columns of falling logos
+            const columns = Math.ceil(window.innerWidth / 150);
+            const rows = Math.ceil(window.innerHeight / 120) + 2;
+            
+            let html = '';
+            for (let col = 0; col < columns; col++) {
+                const xBase = col * 150 + (col % 2 === 0 ? 0 : 75);
+                const startOffset = col % 2 === 0 ? 0 : -60;
+                
+                for (let row = 0; row < rows; row++) {
+                    const x = xBase + (Math.sin(col * 1.5 + row * 0.8) * 20);
+                    const y = startOffset + row * 120 + (col % 3) * 30;
+                    const size = 30 + (col + row) % 3 * 10;
+                    const opacity = 0.03 + ((col + row) % 4) * 0.01;
+                    const rotation = ((col * 7 + row * 13) % 30) - 15;
+                    
+                    html += `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" 
+                        style="left:${x}px; top:${y}px; width:${size}px; height:${size}px; opacity:${opacity}; transform:rotate(${rotation}deg);">
+                        <g transform="translate(50,50)">
+                            ${Array.from({length: 14}, (_, i) => `<polygon points="0,-8 4,-45 0,-42 -4,-45" transform="rotate(${i * 360/14})" />`).join('')}
+                            <circle r="12" />
+                        </g>
+                    </svg>`;
+                }
+            }
+            container.innerHTML = html;
+        }
+
+        // Generate background on load
+        generateBackground();
+        
+        // Regenerate on resize (debounced)
+        let resizeTimeout;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(generateBackground, 200);
+        });
     </script>
 </body>
 </html>
