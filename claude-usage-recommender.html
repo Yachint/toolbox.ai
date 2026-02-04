@@ -660,6 +660,190 @@
             color: #81c784;
         }
 
+        /* Sleep Compensation */
+        .sleep-compensation-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sleep-toggle-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+            flex-shrink: 0;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 26px;
+            transition: 0.3s;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: #888;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+
+        .toggle-switch input:checked + .toggle-slider {
+            background: linear-gradient(135deg, #7c4dff, #536dfe);
+        }
+
+        .toggle-switch input:checked + .toggle-slider:before {
+            transform: translateX(24px);
+            background-color: white;
+        }
+
+        .sleep-toggle-label {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .sleep-toggle-title {
+            font-size: 0.95rem;
+            color: #e0e0e0;
+            font-weight: 500;
+        }
+
+        .sleep-toggle-desc {
+            font-size: 0.75rem;
+            color: #888;
+        }
+
+        .sleep-inputs {
+            display: none;
+            background: rgba(124, 77, 255, 0.1);
+            border: 1px solid rgba(124, 77, 255, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+
+        .sleep-inputs.show {
+            display: block;
+        }
+
+        .sleep-input-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 12px;
+        }
+
+        .sleep-field {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .sleep-field label {
+            font-size: 0.8rem;
+            color: #aaa;
+        }
+
+        .sleep-field input {
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(0, 0, 0, 0.3);
+            color: #fff;
+            font-size: 0.95rem;
+        }
+
+        .sleep-info {
+            font-size: 0.85rem;
+            color: #b388ff;
+            margin: 0;
+        }
+
+        .sleep-info strong {
+            color: #e0e0e0;
+        }
+
+        /* Extended Usage Card */
+        .extended-usage-card {
+            display: none;
+            background: linear-gradient(135deg, rgba(124, 77, 255, 0.15), rgba(83, 109, 254, 0.1));
+            border: 1px solid rgba(124, 77, 255, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .extended-usage-card.show {
+            display: block;
+        }
+
+        .extended-usage-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .extended-icon {
+            font-size: 1.3rem;
+        }
+
+        .extended-title {
+            font-size: 0.9rem;
+            color: #b388ff;
+            font-weight: 500;
+        }
+
+        .extended-usage-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #b388ff;
+            margin-bottom: 8px;
+        }
+
+        .extended-usage-breakdown {
+            font-size: 0.85rem;
+            color: #aaa;
+            margin-bottom: 10px;
+        }
+
+        .extended-usage-breakdown strong {
+            color: #e0e0e0;
+        }
+
+        .extended-usage-note {
+            font-size: 0.8rem;
+            color: #888;
+            font-style: italic;
+            margin: 0;
+        }
+
         /* Cooldown Timer */
         .cooldown-timer {
             display: none;
@@ -1097,6 +1281,19 @@
                 font-size: 0.8rem;
             }
 
+            .sleep-input-row {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .sleep-toggle-row {
+                flex-wrap: wrap;
+            }
+
+            .extended-usage-value {
+                font-size: 2rem;
+            }
+
             .pwa-install-banner {
                 flex-direction: column;
                 padding: 15px;
@@ -1204,8 +1401,39 @@
                     <span class="unit">%</span>
                 </div>
 
+                <!-- Sleep Compensation Toggle -->
+                <div class="sleep-compensation-section">
+                    <div class="sleep-toggle-row">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="sleepCompensationToggle">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <div class="sleep-toggle-label">
+                            <span class="sleep-toggle-title">😴 Sleep Compensation</span>
+                            <span class="sleep-toggle-desc">Borrow usage from your sleep hours</span>
+                        </div>
+                    </div>
+                    
+                    <div class="sleep-inputs" id="sleepInputs">
+                        <div class="sleep-input-row">
+                            <div class="sleep-field">
+                                <label for="bedtime">Bedtime</label>
+                                <input type="time" id="bedtime" value="23:00">
+                            </div>
+                            <div class="sleep-field">
+                                <label for="waketime">Wake time</label>
+                                <input type="time" id="waketime" value="07:00">
+                            </div>
+                        </div>
+                        <p class="sleep-info" id="sleepInfo">
+                            Sleep duration: <strong id="sleepDuration">8 hours</strong> 
+                            = <strong id="sleepBonus">+4.5%</strong> bonus
+                        </p>
+                    </div>
+                </div>
+
                 <div class="tracking-results" id="trackingResults">
-                    <div class="usage-comparison">
+                    <div class="usage-comparison" id="usageComparison">
                         <div class="comparison-item">
                             <div class="label">Planned Limit (Now)</div>
                             <div class="value planned" id="plannedNow">--%</div>
@@ -1214,6 +1442,21 @@
                             <div class="label">Actual Usage</div>
                             <div class="value actual" id="actualNow">--%</div>
                         </div>
+                    </div>
+
+                    <!-- Extended Usage Card (shown when sleep compensation is on) -->
+                    <div class="extended-usage-card" id="extendedUsageCard">
+                        <div class="extended-usage-header">
+                            <span class="extended-icon">🌙</span>
+                            <span class="extended-title">Extended Limit till Bedtime</span>
+                        </div>
+                        <div class="extended-usage-value" id="extendedUsageValue">--%</div>
+                        <p class="extended-usage-breakdown" id="extendedBreakdown">
+                            -- till bedtime + -- sleep bonus = --
+                        </p>
+                        <p class="extended-usage-note">
+                            Use up to this amount before bed to stay on track when you wake up
+                        </p>
                     </div>
 
                     <div class="progress-container">
@@ -1445,7 +1688,8 @@
             globalHourlyRate = hourlyRate;
             globalLastReset = lastReset;
 
-            // Update tracking and what-if displays if functions exist
+            // Update tracking, extended usage, and what-if displays if functions exist
+            if (typeof calculateExtendedUsage === 'function') calculateExtendedUsage();
             if (typeof updateTracking === 'function') updateTracking();
             if (typeof updateWhatIf === 'function') updateWhatIf();
         }
@@ -1627,7 +1871,10 @@
             resetDay: 'claude_planner_resetDay',
             resetTime: 'claude_planner_resetTime',
             dailyLimit: 'claude_planner_dailyLimit',
-            actualUsage: 'claude_planner_actualUsage'
+            actualUsage: 'claude_planner_actualUsage',
+            sleepCompensation: 'claude_planner_sleepCompensation',
+            bedtime: 'claude_planner_bedtime',
+            waketime: 'claude_planner_waketime'
         };
 
         function saveSettings() {
@@ -1639,11 +1886,20 @@
             showSavedToast();
         }
 
+        function saveSleepSettings() {
+            localStorage.setItem(STORAGE_KEYS.sleepCompensation, document.getElementById('sleepCompensationToggle').checked);
+            localStorage.setItem(STORAGE_KEYS.bedtime, document.getElementById('bedtime').value);
+            localStorage.setItem(STORAGE_KEYS.waketime, document.getElementById('waketime').value);
+        }
+
         function loadSettings() {
             const savedResetDay = localStorage.getItem(STORAGE_KEYS.resetDay);
             const savedResetTime = localStorage.getItem(STORAGE_KEYS.resetTime);
             const savedDailyLimit = localStorage.getItem(STORAGE_KEYS.dailyLimit);
             const savedActualUsage = localStorage.getItem(STORAGE_KEYS.actualUsage);
+            const savedSleepCompensation = localStorage.getItem(STORAGE_KEYS.sleepCompensation);
+            const savedBedtime = localStorage.getItem(STORAGE_KEYS.bedtime);
+            const savedWaketime = localStorage.getItem(STORAGE_KEYS.waketime);
 
             if (savedResetDay !== null) {
                 document.getElementById('resetDay').value = savedResetDay;
@@ -1656,6 +1912,16 @@
             }
             if (savedActualUsage !== null) {
                 document.getElementById('actualUsage').value = savedActualUsage;
+            }
+            if (savedSleepCompensation === 'true') {
+                document.getElementById('sleepCompensationToggle').checked = true;
+                document.getElementById('sleepInputs').classList.add('show');
+            }
+            if (savedBedtime !== null) {
+                document.getElementById('bedtime').value = savedBedtime;
+            }
+            if (savedWaketime !== null) {
+                document.getElementById('waketime').value = savedWaketime;
             }
         }
 
@@ -1968,11 +2234,120 @@
         document.getElementById('extraUsage').addEventListener('input', updateWhatIf);
 
         // ==========================================
+        // SLEEP COMPENSATION
+        // ==========================================
+
+        function calculateSleepDuration() {
+            const bedtime = document.getElementById('bedtime').value;
+            const waketime = document.getElementById('waketime').value;
+            
+            if (!bedtime || !waketime) return 0;
+
+            const [bedHour, bedMin] = bedtime.split(':').map(Number);
+            const [wakeHour, wakeMin] = waketime.split(':').map(Number);
+
+            // Convert to minutes from midnight
+            let bedMinutes = bedHour * 60 + bedMin;
+            let wakeMinutes = wakeHour * 60 + wakeMin;
+
+            // If wake time is before bed time, it's the next day
+            if (wakeMinutes <= bedMinutes) {
+                wakeMinutes += 24 * 60; // Add 24 hours
+            }
+
+            const sleepMinutes = wakeMinutes - bedMinutes;
+            return sleepMinutes / 60; // Return hours
+        }
+
+        function calculateExtendedUsage() {
+            const sleepCompensationEnabled = document.getElementById('sleepCompensationToggle').checked;
+            const extendedUsageCard = document.getElementById('extendedUsageCard');
+            
+            if (!sleepCompensationEnabled) {
+                extendedUsageCard.classList.remove('show');
+                return null;
+            }
+
+            const sleepHours = calculateSleepDuration();
+            const sleepBonus = sleepHours * globalHourlyRate;
+
+            // Calculate planned limit at bedtime
+            const bedtime = document.getElementById('bedtime').value;
+            if (!bedtime || !globalLastReset) {
+                extendedUsageCard.classList.remove('show');
+                return null;
+            }
+
+            const [bedHour, bedMin] = bedtime.split(':').map(Number);
+            const now = new Date();
+            
+            // Create bedtime date for today
+            let bedtimeDate = new Date(now);
+            bedtimeDate.setHours(bedHour, bedMin, 0, 0);
+            
+            // If bedtime has already passed today, use tomorrow's bedtime
+            if (bedtimeDate <= now) {
+                bedtimeDate.setDate(bedtimeDate.getDate() + 1);
+            }
+
+            // Calculate hours from last reset to bedtime
+            const hoursToBedtime = (bedtimeDate - globalLastReset) / (1000 * 60 * 60);
+            const plannedAtBedtime = Math.floor(hoursToBedtime * globalHourlyRate);
+
+            // Extended usage = planned at bedtime + sleep bonus
+            const extendedUsage = Math.floor(plannedAtBedtime + sleepBonus);
+
+            // Update the UI
+            extendedUsageCard.classList.add('show');
+            document.getElementById('extendedUsageValue').textContent = extendedUsage + '%';
+            document.getElementById('extendedBreakdown').innerHTML = 
+                `<strong>${plannedAtBedtime}%</strong> till bedtime + <strong>${sleepBonus.toFixed(1)}%</strong> sleep bonus = <strong>${extendedUsage}%</strong>`;
+
+            // Update sleep info
+            document.getElementById('sleepDuration').textContent = sleepHours.toFixed(1) + ' hours';
+            document.getElementById('sleepBonus').textContent = '+' + sleepBonus.toFixed(1) + '%';
+
+            return extendedUsage;
+        }
+
+        // Sleep compensation toggle
+        document.getElementById('sleepCompensationToggle').addEventListener('change', function() {
+            const sleepInputs = document.getElementById('sleepInputs');
+            if (this.checked) {
+                sleepInputs.classList.add('show');
+            } else {
+                sleepInputs.classList.remove('show');
+            }
+            saveSleepSettings();
+            calculateExtendedUsage();
+            updateTracking();
+        });
+
+        // Sleep time inputs
+        document.getElementById('bedtime').addEventListener('change', function() {
+            saveSleepSettings();
+            calculateExtendedUsage();
+            updateTracking();
+        });
+
+        document.getElementById('waketime').addEventListener('change', function() {
+            saveSleepSettings();
+            calculateExtendedUsage();
+            updateTracking();
+        });
+
+        // ==========================================
         // INITIALIZATION
         // ==========================================
 
         // Load saved settings on page load
         loadSettings();
+
+        // Calculate extended usage after settings are loaded
+        setTimeout(() => {
+            calculateExtendedUsage();
+            updateTracking();
+        }, 100);
 
         // ==========================================
         // PWA SUPPORT
