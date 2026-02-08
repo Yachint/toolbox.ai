@@ -1585,6 +1585,7 @@
         let globalDailyLimit = 13.5;
         let globalHoursRemaining = 0;
         let globalDaysRemaining = 0;
+        let globalNextReset = null;
 
         function calculate() {
             const resetDay = parseInt(document.getElementById('resetDay').value);
@@ -1687,6 +1688,7 @@
             globalDaysRemaining = daysRemaining;
             globalHourlyRate = hourlyRate;
             globalLastReset = lastReset;
+            globalNextReset = nextReset;
 
             // Update tracking, extended usage, and what-if displays if functions exist
             if (typeof calculateExtendedUsage === 'function') calculateExtendedUsage();
@@ -2268,17 +2270,16 @@
                 return null;
             }
 
-            const sleepHours = calculateSleepDuration();
-            const sleepBonus = sleepHours * globalHourlyRate;
-
-            // Calculate planned limit at bedtime
             const bedtime = document.getElementById('bedtime').value;
-            if (!bedtime || !globalLastReset) {
+            const waketime = document.getElementById('waketime').value;
+            
+            if (!bedtime || !waketime || !globalLastReset || !globalNextReset) {
                 extendedUsageCard.classList.remove('show');
                 return null;
             }
 
             const [bedHour, bedMin] = bedtime.split(':').map(Number);
+            const [wakeHour, wakeMin] = waketime.split(':').map(Number);
             const now = new Date();
             
             // Create bedtime date for today
@@ -2290,24 +2291,125 @@
                 bedtimeDate.setDate(bedtimeDate.getDate() + 1);
             }
 
-            // Calculate hours from last reset to bedtime
-            const hoursToBedtime = (bedtimeDate - globalLastReset) / (1000 * 60 * 60);
-            const plannedAtBedtime = Math.floor(hoursToBedtime * globalHourlyRate);
+            // Create wake time date (after bedtime)
+            let waketimeDate = new Date(bedtimeDate);
+            waketimeDate.setHours(wakeHour, wakeMin, 0, 0);
+            
+            // If wake time appears to be before bed time, it's the next day
+            if (waketimeDate <= bedtimeDate) {
+                waketimeDate.setDate(waketimeDate.getDate() + 1);
+            }
 
-            // Extended usage = planned at bedtime + sleep bonus
-            const extendedUsage = Math.floor(plannedAtBedtime + sleepBonus);
+            const sleepHours = (waketimeDate - bedtimeDate) / (1000 * 60 * 60);
+
+            /*
+             * RESET BOUNDARY LOGIC:
+             * =====================
+             * Check if the weekly reset happens between NOW and wake time.
+             * 
+             * Timeline possibilities:
+             *   NOW -----> BEDTIME -----> WAKE
+             *   
+             * Case A: Reset happens between NOW and BEDTIME
+             *   - User can use up to 100% before reset (it all gets wiped)
+             *   - After reset, new week starts
+             *   - Sleep bonus calculated from new week's rate
+             *   
+             * Case B: Reset happens between BEDTIME and WAKE (during sleep)
+             *   - User uses current week quota until bed
+             *   - Reset happens while sleeping
+             *   - Wakes up in new week with some hours already elapsed
+             *   
+             * Case C: Reset happens AFTER wake time (normal case)
+             *   - Standard calculation applies
+             *   - extendedUsage = plannedAtBedtime + sleepBonus
+             *   
+             * Key insight: We need to check where reset falls in the timeline:
+             *   NOW -> RESET -> BEDTIME -> WAKE  (Case A: reset before bed)
+             *   NOW -> BEDTIME -> RESET -> WAKE  (Case B: reset during sleep)  
+             *   NOW -> BEDTIME -> WAKE -> RESET  (Case C: normal, no reset interference)
+             */
+
+            const resetBeforeBedtime = globalNextReset <= bedtimeDate && globalNextReset > now;
+            const resetDuringSleep = globalNextReset > bedtimeDate && globalNextReset < waketimeDate;
+            const resetAfterWake = globalNextReset >= waketimeDate;
+
+            let extendedUsage, plannedAtBedtime, sleepBonus, breakdownText;
+
+            if (resetBeforeBedtime) {
+                // CASE A: Reset happens between NOW and BEDTIME!
+                // User can burn through remaining quota - it resets before bed anyway
+                // Then calculate sleep bonus based on hours from reset to wake
+                
+                const hoursFromResetToWake = (waketimeDate - globalNextReset) / (1000 * 60 * 60);
+                const usageAccruedAfterReset = hoursFromResetToWake * globalHourlyRate;
+                
+                // User can use up to 100% before reset since it wipes anyway
+                extendedUsage = 100;
+                
+                breakdownText = `<strong>⚠️ Reset at ${formatTimeFromDate(globalNextReset)} before bedtime!</strong><br>` +
+                    `Use up to <strong>100%</strong> – it resets before you sleep.<br>` +
+                    `You'll wake at ~<strong>${usageAccruedAfterReset.toFixed(1)}%</strong> in the new week.`;
+                
+                document.getElementById('sleepDuration').textContent = sleepHours.toFixed(1) + ' hours';
+                document.getElementById('sleepBonus').textContent = '🔄 Reset before bed!';
+                
+            } else if (resetDuringSleep) {
+                // CASE B: Reset happens DURING sleep (between bedtime and wake)
+                // User uses current week quota until bed
+                // Wakes up in new week
+                
+                const hoursToBedtime = (bedtimeDate - globalLastReset) / (1000 * 60 * 60);
+                plannedAtBedtime = Math.floor(hoursToBedtime * globalHourlyRate);
+                
+                // Hours from reset to wake = usage accrued while sleeping in new week
+                const hoursFromResetToWake = (waketimeDate - globalNextReset) / (1000 * 60 * 60);
+                const usageAccruedAfterReset = hoursFromResetToWake * globalHourlyRate;
+                
+                // User can use up to 100% before bed since it resets during sleep
+                extendedUsage = 100;
+                
+                breakdownText = `<strong>⚠️ Reset at ${formatTimeFromDate(globalNextReset)} during sleep!</strong><br>` +
+                    `Use up to <strong>100%</strong> – it resets while you sleep.<br>` +
+                    `You'll wake at ~<strong>${usageAccruedAfterReset.toFixed(1)}%</strong> in the new week.`;
+                
+                document.getElementById('sleepDuration').textContent = sleepHours.toFixed(1) + ' hours';
+                document.getElementById('sleepBonus').textContent = '🔄 Reset during sleep!';
+                
+            } else {
+                // CASE C: Normal case - reset is after wake time (or already passed)
+                // Standard sleep compensation calculation
+                
+                const hoursToBedtime = (bedtimeDate - globalLastReset) / (1000 * 60 * 60);
+                plannedAtBedtime = Math.floor(hoursToBedtime * globalHourlyRate);
+                sleepBonus = sleepHours * globalHourlyRate;
+                extendedUsage = Math.floor(plannedAtBedtime + sleepBonus);
+                
+                // Cap at 100%
+                extendedUsage = Math.min(extendedUsage, 100);
+                
+                breakdownText = `<strong>${plannedAtBedtime}%</strong> till bedtime + <strong>${sleepBonus.toFixed(1)}%</strong> sleep bonus = <strong>${extendedUsage}%</strong>`;
+                
+                document.getElementById('sleepDuration').textContent = sleepHours.toFixed(1) + ' hours';
+                document.getElementById('sleepBonus').textContent = '+' + sleepBonus.toFixed(1) + '%';
+            }
 
             // Update the UI
             extendedUsageCard.classList.add('show');
             document.getElementById('extendedUsageValue').textContent = extendedUsage + '%';
-            document.getElementById('extendedBreakdown').innerHTML = 
-                `<strong>${plannedAtBedtime}%</strong> till bedtime + <strong>${sleepBonus.toFixed(1)}%</strong> sleep bonus = <strong>${extendedUsage}%</strong>`;
-
-            // Update sleep info
-            document.getElementById('sleepDuration').textContent = sleepHours.toFixed(1) + ' hours';
-            document.getElementById('sleepBonus').textContent = '+' + sleepBonus.toFixed(1) + '%';
+            document.getElementById('extendedBreakdown').innerHTML = breakdownText;
 
             return extendedUsage;
+        }
+
+        // Helper function to format time from Date object
+        function formatTimeFromDate(date) {
+            const hours = date.getHours();
+            const minutes = date.getMinutes();
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            const h = hours % 12 || 12;
+            const m = minutes.toString().padStart(2, '0');
+            return `${h}:${m} ${ampm}`;
         }
 
         // Sleep compensation toggle
